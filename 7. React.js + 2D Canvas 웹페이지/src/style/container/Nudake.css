@@ -1,0 +1,15 @@
+.nudake {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover
+}
+.nudake canvas {
+  position: absolute;
+}

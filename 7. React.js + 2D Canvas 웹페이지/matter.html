@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.js" integrity="sha512-kTA5As3DFbe7Gz6vIpsyaWjX9WSEKeyGigJkmzlQDIUVlPV5ceFxKHG+CAXvbxQvd8iVWJ6nS5egDw1WCss4Sw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <title>Matter.js</title>
+</head>
+<body>
+  <canvas></canvas>
+
+  <script>
+    const canvas = document.querySelector('canvas')
+    const cw = 500
+    const ch = 700
+
+    /*
+    [Matter.js]
+    Engine: 물리 시뮬레이션 담당, Body 들의 list들을 관리
+    Render: Body 들의 시각적인 부분을 담당 ex) Canvas의 Width, height, color, ...
+    Runner: Engine, Render의 업데이트 loop관리
+    Body: 단일 물리적 객체 (시각적X)
+    Bodies: 물리값만 가진 Body를 시각적으로 쉽게 표현한 모듈 ex)원, 사각현, 다각형, ...
+    Composite: Composite.add(engine.world, [...body]), body를 추가해주거나 묶는 역할
+
+    Mouse: Canvas 내에서의 포지션값을 위함, 캔버스의 body들과 상호 작용 X
+    MouseConstraint: 각 Body들과 상호작용 할 수 있게 해줌, Mouse와 같이 사용
+    */
+    const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, Events} = Matter
+
+    const engine = Engine.create({
+      enableSleeping: true,
+    })
+
+    const render = Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: cw,
+        height: ch,
+        wireframes: false,
+        showSleeping: true
+      }
+    })
+
+    const runner = Runner.create()
+
+    Render.run(render)
+    Runner.run(runner, engine)
+
+    const mouse = Mouse.create(canvas)
+
+    const mouseConstraint = MouseConstraint.create(engine, {mouse: mouse})
+
+    const ground =  Bodies.rectangle(cw/2, ch, cw, 50, { isStatic: true})
+    Composite.add(engine.world, [ ground, mouseConstraint])
+
+    canvas.addEventListener('mousewheel', () => {
+      createBox()
+    })
+
+    function createBox() {
+      const box =  Bodies.rectangle(mouse.position.x, mouse.position.y, 50, 50)
+      Composite.add(engine.world, [box])
+    }
+
+    Events.on(runner, "tick", () => {
+      engine.world.bodies.forEach(body => {
+        if (body.position.y > ch) {
+          Composite.remove(engine.world, body)
+        }
+      })
+    })
+  </script>
+</body>
+</html>
